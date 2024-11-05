@@ -46,6 +46,7 @@ func (server *Server) AcceptConnections() {
 			continue
 		}
 
+		server.ConnectionCount += 1
 		go server.ConnectionHandler(conn)
 	}
 }
