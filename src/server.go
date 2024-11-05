@@ -17,6 +17,7 @@ package src
 
 import (
 	"fmt"
+	"io"
 	"net"
 )
 
@@ -56,6 +57,9 @@ func (server *Server) ConnectionHandler(conn net.Conn) {
 	for {
 		_, err := conn.Read(buf)
 		if err != nil {
+			if err == io.EOF {
+				continue
+			}
 			fmt.Println("[server - error] Issue receiving data: ", err.Error())
 			return
 		}
