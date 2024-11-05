@@ -16,17 +16,22 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
+	"github.com/stevezaluk/go-protocol-poc/src"
 )
+
+var server src.Server
 
 var serverCmd = &cobra.Command{
 	Use:   "server",
 	Short: "Start server side routine",
 	Long:  `Executing the 'server' command will start the server and will wait for incoming client connections`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("server called")
+		server.Start()
+		server.AcceptConnections()
+	},
+	PostRun: func(cmd *cobra.Command, args []string) {
+		server.Stop()
 	},
 }
 

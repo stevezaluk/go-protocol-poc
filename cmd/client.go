@@ -16,10 +16,11 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
+	"github.com/stevezaluk/go-protocol-poc/src"
 )
+
+var client src.Client
 
 var clientCmd = &cobra.Command{
 	Use:   "client",
@@ -28,10 +29,19 @@ var clientCmd = &cobra.Command{
 and provide an interface for sending messages. Executing this with no arguments will send a basic message.
 Any additional arguments passed will be processed as messages and will be sent to the server`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("client called")
+		uri, _ := cmd.Flags().GetString("uri")
+
+		client.Uri = uri
+
+		client.Connect()
+		client.SendWelcome()
+	},
+	PostRun: func(cmd *cobra.Command, args []string) {
+		client.Disconnect()
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(clientCmd)
+	clientCmd.PersistentFlags().StringP("uri", "u", "localhost:8000", "The URI you want to try and connect to")
 }
