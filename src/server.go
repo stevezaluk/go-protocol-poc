@@ -10,10 +10,10 @@ type Server struct {
 }
 
 func (server *Server) Start() {
-	fmt.Println("[info] Attempting to start socket")
+	fmt.Println("[server - info] Attempting to start socket")
 	listener, err := net.Listen("tcp", "127.0.0.1:8000")
 	if err != nil {
-		fmt.Println("[error] Starting connection failed")
+		fmt.Println("[server - error] Starting connection failed")
 		panic(err)
 	}
 
@@ -21,7 +21,7 @@ func (server *Server) Start() {
 }
 
 func (server *Server) Stop() {
-	fmt.Println("[info] Attempting to stop socket")
+	fmt.Println("[server - info] Attempting to stop socket")
 	serv := *server.Sock
 	serv.Close()
 }
