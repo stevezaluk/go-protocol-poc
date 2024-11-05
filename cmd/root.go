@@ -1,5 +1,5 @@
 /*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 Steven A. Zaluk
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,10 +13,26 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package main
+package cmd
 
-import "github.com/stevezaluk/go-protocol-poc/cmd"
+import (
+	"fmt"
+	"github.com/spf13/cobra"
+	"os"
+)
 
-func main() {
-	cmd.Execute()
+var rootCmd = &cobra.Command{
+	Use:   "go-protocol",
+	Short: "Allows you to start client and server side processes for this PoC",
+	Long:  ``,
+}
+
+func Execute() {
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
+
+func init() {
 }
