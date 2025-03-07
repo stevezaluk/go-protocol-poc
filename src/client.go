@@ -16,13 +16,24 @@ limitations under the License.
 package src
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/sha256"
+	"crypto/x509"
+	"encoding/base64"
+	"encoding/hex"
+	"encoding/pem"
 	"fmt"
 	"net"
+	"strings"
 )
 
 type Client struct {
 	Uri  string
 	Conn *net.Conn
+
+	PublicKey *rsa.PublicKey
+	PemKey    string
 }
 
 func (client *Client) Connect() {
@@ -36,14 +47,66 @@ func (client *Client) Connect() {
 	client.Conn = &conn
 }
 
-func (client *Client) SendWelcome() {
-	fmt.Println("[client - msg] Sending welcome message")
+func (client *Client) NegotiateKeys() {
+	conn := *client.Conn
 
-	msg := []byte("Hello from client")
+	_, err := conn.Write([]byte("CONNECT"))
+	if err != nil {
+		panic(err)
+	}
+
+	buffer := make([]byte, 4096)
+	n, _err := conn.Read(buffer)
+	if _err != nil {
+		panic(_err)
+	}
+
+	bufferSplit := strings.Split(string(buffer[:n]), "PUBKEY:")
+	pemKey := bufferSplit[1]
+
+	client.PemKey = pemKey
+
+	pubKeyBlock, _ := pem.Decode([]byte(pemKey)) // split buffer
+	pubKey, err := x509.ParsePKCS1PublicKey(pubKeyBlock.Bytes)
+	if err != nil {
+		panic(err)
+	}
+
+	client.PublicKey = pubKey
+
+	fmt.Println("[info - client] ", string(buffer))
+}
+
+func (client *Client) ValidatePublicKey() {
+	hash := sha256.Sum256([]byte(client.PemKey))
+	hashStr := hex.EncodeToString(hash[:])
+
+	fmt.Println("Key Pair", hashStr)
+	message := "PUBKEY:ACK:" + hashStr
 
 	conn := *client.Conn
 
-	_, err := conn.Write(msg)
+	_, err := conn.Write([]byte(message))
+	if err != nil {
+		panic(err)
+	}
+
+}
+
+func (client *Client) SendWelcome() {
+	fmt.Println("[client - msg] Sending welcome message")
+
+	conn := *client.Conn
+
+	msg := []byte("Hello from client")
+
+	cipherText, _err := rsa.EncryptOAEP(sha256.New(), rand.Reader, client.PublicKey, msg, nil)
+	if _err != nil {
+		panic(_err)
+	}
+
+	encodedText := base64.StdEncoding.WithPadding(base64.StdPadding).EncodeToString(cipherText)
+	_, err := conn.Write([]byte(encodedText))
 	if err != nil {
 		fmt.Println("[error] Failed to send welcome message: ", err.Error())
 	}

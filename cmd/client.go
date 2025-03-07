@@ -34,10 +34,12 @@ Any additional arguments passed will be processed as messages and will be sent t
 		client.Uri = uri
 
 		client.Connect()
+		client.NegotiateKeys()
+		client.ValidatePublicKey()
 		client.SendWelcome()
 	},
 	PostRun: func(cmd *cobra.Command, args []string) {
-		client.Disconnect()
+		// client.Disconnect()
 	},
 }
 
